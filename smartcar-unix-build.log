@@ -1,0 +1,22 @@
+make: Entering directory '/home/wxx33/micropython/ports/unix'
+Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
+Including User C Module from ../../modules/smartcar
+GEN build-smartcar/genhdr/qstr.i.last
+GEN build-smartcar/genhdr/qstr.split
+GEN build-smartcar/genhdr/moduledefs.split
+GEN build-smartcar/genhdr/root_pointers.split
+GEN build-smartcar/genhdr/moduledefs.collected
+GEN build-smartcar/genhdr/qstrdefs.collected.h
+GEN build-smartcar/genhdr/compressed.collected
+GEN build-smartcar/genhdr/root_pointers.collected
+Root pointer registrations not updated
+Module registrations not updated
+Compressed data not updated
+QSTR not updated
+CC ../../modules/smartcar/modsmartcar.c
+CC ../../modules/smartcar/adc_port.c
+CC ../../modules/smartcar/encoder_port.c
+LINK build-smartcar/micropython
+   text	   data	    bss	    dec	    hex	filename
+ 807222	  73568	   4368	 885158	  d81a6	build-smartcar/micropython
+make: Leaving directory '/home/wxx33/micropython/ports/unix'

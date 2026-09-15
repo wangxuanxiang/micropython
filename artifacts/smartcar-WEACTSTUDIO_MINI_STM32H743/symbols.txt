@@ -1,0 +1,4 @@
+08001328 T sc_adc_capture
+080016ec T sc_encoder_capture
+08000d44 T smartcar_irq
+08053188 T smartcar_module

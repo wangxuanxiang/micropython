@@ -779,6 +779,18 @@ void TIM7_DAC_IRQHandler(void) {
 #else
 void TIM7_IRQHandler(void) {
     IRQ_ENTER(TIM7_IRQn);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    extern void smartcar_irq(void);
+    if (sc_timer_is_claimed(7)) {
+        if (TIM7->SR & TIM_SR_UIF) {
+            TIM7->SR = ~TIM_SR_UIF;
+            smartcar_irq();
+        }
+        IRQ_EXIT(TIM7_IRQn);
+        return;
+    }
+    #endif
     timer_irq_handler(7);
     IRQ_EXIT(TIM7_IRQn);
 }

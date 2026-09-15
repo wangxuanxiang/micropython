@@ -701,11 +701,23 @@ TIM_HandleTypeDef *pyb_timer_get_handle(mp_obj_t timer) {
         mp_raise_ValueError(MP_ERROR_TEXT("need a Timer object"));
     }
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(timer);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     return &self->tim;
 }
 
 static void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
 
     if (self->tim.State == HAL_TIM_STATE_RESET) {
         mp_printf(print, "Timer(%u)", self->tim_id);
@@ -803,6 +815,12 @@ static void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///
 ///  You must either specify freq or both of period and prescaler.
 static mp_obj_t pyb_timer_init_helper(pyb_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     enum { ARG_freq, ARG_prescaler, ARG_period, ARG_tick_hz, ARG_mode, ARG_div, ARG_callback, ARG_deadtime, ARG_brk, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -1061,6 +1079,12 @@ static mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(%d) doesn't exist"), tim_id);
     }
 
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     // check if the timer is reserved for system use or not
     if (MICROPY_HW_TIM_IS_RESERVED(tim_id)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Timer(%d) is reserved"), tim_id);
@@ -1102,6 +1126,12 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_init_obj, 1, pyb_timer_init);
 // timer.deinit()
 static mp_obj_t pyb_timer_deinit(mp_obj_t self_in) {
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
 
     // Disable the base interrupt
     pyb_timer_callback(self_in, mp_const_none);
@@ -1213,6 +1243,12 @@ static mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
     };
 
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     mp_int_t channel = mp_obj_get_int(pos_args[1]);
 
     if (channel < 1 || channel > 4) {
@@ -1470,6 +1506,12 @@ static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_timer_channel_obj, 2, pyb_timer_channel);
 /// Get or set the timer counter.
 static mp_obj_t pyb_timer_counter(size_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (n_args == 1) {
         // get
         return mp_obj_new_int(self->tim.Instance->CNT);
@@ -1485,6 +1527,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_counter_obj, 1, 2, pyb_time
 /// Get the frequency of the source of the timer.
 static mp_obj_t pyb_timer_source_freq(mp_obj_t self_in) {
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     uint32_t source_freq = timer_get_source_freq(self->tim_id);
     return mp_obj_new_int(source_freq);
 }
@@ -1494,6 +1542,12 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pyb_timer_source_freq_obj, pyb_timer_source_fre
 /// Get or set the frequency for the timer (changes prescaler and period if set).
 static mp_obj_t pyb_timer_freq(size_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (n_args == 1) {
         // get
         uint32_t prescaler = self->tim.Instance->PSC & 0xffff;
@@ -1529,6 +1583,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_freq_obj, 1, 2, pyb_timer_f
 /// Get or set the prescaler for the timer.
 static mp_obj_t pyb_timer_prescaler(size_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (n_args == 1) {
         // get
         return mp_obj_new_int(self->tim.Instance->PSC & 0xffff);
@@ -1544,6 +1604,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_prescaler_obj, 1, 2, pyb_ti
 /// Get or set the period of the timer.
 static mp_obj_t pyb_timer_period(size_t n_args, const mp_obj_t *args) {
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (n_args == 1) {
         // get
         return mp_obj_new_int(__HAL_TIM_GET_AUTORELOAD(&self->tim) & TIMER_CNT_MASK(self));
@@ -1561,6 +1627,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_period_obj, 1, 2, pyb_timer
 /// If `fun` is `None` then the callback will be disabled.
 static mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback) {
     pyb_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (callback == mp_const_none) {
         // stop interrupt (but not timer)
         __HAL_TIM_DISABLE_IT(&self->tim, TIM_IT_UPDATE);
@@ -1635,6 +1707,12 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /// TimerChannel objects are created using the Timer.channel() method.
 static void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_timer_channel_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->timer->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
 
     mp_printf(print, "TimerChannel(timer=%u, channel=%u, mode=%q)",
         self->timer->tim_id,
@@ -1661,6 +1739,12 @@ static void pyb_timer_channel_print(const mp_print_t *print, mp_obj_t self_in, m
 /// In center aligned mode, a pulse width of `period` corresponds to a duty cycle of 100%
 static mp_obj_t pyb_timer_channel_capture_compare(size_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->timer->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (n_args == 1) {
         // get
         return mp_obj_new_int(__HAL_TIM_GET_COMPARE(&self->timer->tim, TIMER_CHANNEL(self)) & TIMER_CNT_MASK(self->timer));
@@ -1680,6 +1764,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_capture_compare_obj
 /// a duty cycle of 25%.
 static mp_obj_t pyb_timer_channel_pulse_width_percent(size_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->timer->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     uint32_t period = compute_period(self->timer);
     if (n_args == 1) {
         // get
@@ -1696,6 +1786,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_pulse_width_percent
 
 static mp_obj_t pyb_timer_channel_pulse_width_us(size_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->timer->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (n_args == 1) {
         // get
         uint32_t cmp = __HAL_TIM_GET_COMPARE(&self->timer->tim, TIMER_CHANNEL(self)) & TIMER_CNT_MASK(self->timer);
@@ -1711,6 +1807,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_pulse_width_us_obj,
 
 static mp_obj_t pyb_timer_channel_pulse_width_ns(size_t n_args, const mp_obj_t *args) {
     pyb_timer_channel_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->timer->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (n_args == 1) {
         // get
         uint32_t cmp = __HAL_TIM_GET_COMPARE(&self->timer->tim, TIMER_CHANNEL(self)) & TIMER_CNT_MASK(self->timer);
@@ -1730,6 +1832,12 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_timer_channel_pulse_width_ns_obj,
 /// If `fun` is `None` then the callback will be disabled.
 static mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback) {
     pyb_timer_channel_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(self->timer->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
     if (callback == mp_const_none) {
         // stop interrupt (but not timer)
         __HAL_TIM_DISABLE_IT(&self->timer->tim, TIMER_IRQ_MASK(self->channel));

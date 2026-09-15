@@ -325,6 +325,12 @@ static void adcx_clock_enable(ADC_HandleTypeDef *adch) {
 }
 
 static void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_adc_is_claimed(unsigned id);
+    if (sc_adc_is_claimed(1) || sc_adc_is_claimed(2)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC owned by smartcar"));
+    }
+    #endif
     adcx_clock_enable(adch);
 
     // Set ADC clock prescaler, if it's not done by HAL_ADC_Init() below.
@@ -430,6 +436,12 @@ static void adc_init_single(pyb_obj_adc_t *adc_obj, ADC_TypeDef *adc) {
 }
 
 static void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_adc_is_claimed(unsigned id);
+    if (sc_adc_is_claimed(1) || sc_adc_is_claimed(2)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC owned by smartcar"));
+    }
+    #endif
     ADC_ChannelConfTypeDef sConfig;
 
     #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32N6) || defined(STM32WB)
@@ -575,6 +587,12 @@ static void adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
 /// Create an ADC object associated with the given pin.
 /// This allows you to then read analog values on that pin.
 static mp_obj_t adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_adc_is_claimed(unsigned id);
+    if (sc_adc_is_claimed(1) || sc_adc_is_claimed(2)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC owned by smartcar"));
+    }
+    #endif
     // check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -893,6 +911,12 @@ typedef struct _pyb_adc_all_obj_t {
 float adc_read_core_vref(ADC_HandleTypeDef *adcHandle);
 
 void adc_init_all(pyb_adc_all_obj_t *adc_all, uint32_t resolution, uint32_t en_mask) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_adc_is_claimed(unsigned id);
+    if (sc_adc_is_claimed(1) || sc_adc_is_claimed(2)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC owned by smartcar"));
+    }
+    #endif
 
     switch (resolution) {
         #if !defined(STM32H7)

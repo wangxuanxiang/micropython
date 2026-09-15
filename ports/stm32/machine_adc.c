@@ -197,6 +197,12 @@ static const uint8_t adc_cr_to_bits_table[] = {12, 10, 8, 6};
 #endif
 
 void adc_config(ADC_TypeDef *adc, uint32_t bits) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_adc_is_claimed(unsigned id);
+    if (sc_adc_is_claimed(1) || sc_adc_is_claimed(2)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC owned by smartcar"));
+    }
+    #endif
     // Configure ADC clock source and enable ADC clock
     #if defined(STM32G0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_SYSCLK);
@@ -555,6 +561,12 @@ static uint32_t adc_read_channel(ADC_TypeDef *adc) {
 }
 
 uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_adc_is_claimed(unsigned id);
+    if ((adc == ADC1 && sc_adc_is_claimed(1)) || (adc == ADC2 && sc_adc_is_claimed(2))) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC owned by smartcar"));
+    }
+    #endif
     if (channel == MACHINE_ADC_CH_VREF) {
         return 0xffff;
     }
@@ -631,6 +643,12 @@ static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 // ADC(id)
 static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_adc_is_claimed(unsigned id);
+    if (sc_adc_is_claimed(1) || sc_adc_is_claimed(2)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC owned by smartcar"));
+    }
+    #endif
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 

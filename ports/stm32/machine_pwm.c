@@ -117,6 +117,15 @@ typedef struct _pwm_t {
     uint8_t channel; // one of PWM_CH1-PWM_CH4
 } pwm_t;
 
+static void pwm_check_available(pwm_t *pwm) {
+    #if MICROPY_PY_SMARTCAR
+    extern bool sc_timer_is_claimed(unsigned id);
+    if (sc_timer_is_claimed(pwm->tim_id)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timer owned by smartcar"));
+    }
+    #endif
+}
+
 static void pwm_init(pwm_t *pwm) {
     // The following code assumes each channel has 8 bits in CCMR1/2.
     MP_STATIC_ASSERT(TIM_CCMR1_CC1S_Pos + 8 == TIM_CCMR1_CC2S_Pos);
@@ -515,6 +524,7 @@ static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    pwm_check_available(&self->pwm);
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,     MP_ARG_INT, {.u_int = -1} },
@@ -569,6 +579,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     // If inactive, clear out the state (may be set from a previous soft reset cycle).
+    pwm_check_available(&self->pwm);
     if (!(timer_pwm_active & (1U << self->pwm.tim_id))) {
         timer_pwm_active |= 1U << self->pwm.tim_id;
         size_t pwm_base_index = (self - &machine_pwm_obj[0]) & ~(NUM_CHANNELS_PER_TIMER - 1);
@@ -610,6 +621,7 @@ void machine_pwm_deinit_all(void) {
 }
 
 static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+    pwm_check_available(&self->pwm);
     pwm_deinit(&self->pwm);
 }
 
@@ -622,6 +634,7 @@ static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
 }
 
 static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+    pwm_check_available(&self->pwm);
     // Check validity and change the frequency of the TIM peripheral.
     if (freq <= 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("freq too small"));
@@ -654,6 +667,7 @@ static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 }
 
 static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
+    pwm_check_available(&self->pwm);
     machine_pwm_state_t *state = get_state(self);
     state->duty = duty_u16;
     state->duty_type = DUTY_U16;
@@ -674,6 +688,7 @@ static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 }
 
 static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
+    pwm_check_available(&self->pwm);
     machine_pwm_state_t *state = get_state(self);
     state->duty = duty_ns;
     state->duty_type = DUTY_NS;

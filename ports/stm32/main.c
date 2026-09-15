@@ -758,6 +758,10 @@ soft_reset_exit:
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
     #endif
+    #if MICROPY_PY_SMARTCAR
+    extern void smartcar_deinit(void);
+    smartcar_deinit();
+    #endif
     soft_timer_deinit();
     timer_deinit();
     uart_deinit_all();
