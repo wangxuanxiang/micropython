@@ -1,0 +1,11 @@
+make: Entering directory '/home/wxx33/micropython/ports/stm32'
+Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
+Including User C Module from ../../modules/seekfree
+Including User C Module from ../../modules/smartcar
+Updating submodules: lib/CMSIS_6 lib/libhydrogen lib/stm32lib lib/tinyusb lib/micropython-lib
+Synchronizing submodule url for 'lib/CMSIS_6'
+Synchronizing submodule url for 'lib/libhydrogen'
+Synchronizing submodule url for 'lib/micropython-lib'
+Synchronizing submodule url for 'lib/stm32lib'
+Synchronizing submodule url for 'lib/tinyusb'
+make: Leaving directory '/home/wxx33/micropython/ports/stm32'

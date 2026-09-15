@@ -1,0 +1,26 @@
+make: Entering directory '/home/wxx33/micropython/ports/unix'
+Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
+Including User C Module from ../../modules/smartcar
+Including User C Module from ../../modules/seekfree
+GEN build-seekfree/genhdr/qstr.i.last
+GEN build-seekfree/genhdr/qstr.split
+GEN build-seekfree/genhdr/compressed.split
+GEN build-seekfree/genhdr/root_pointers.split
+GEN build-seekfree/genhdr/moduledefs.split
+GEN build-seekfree/genhdr/qstrdefs.collected.h
+GEN build-seekfree/genhdr/root_pointers.collected
+GEN build-seekfree/genhdr/compressed.collected
+GEN build-seekfree/genhdr/moduledefs.collected
+Root pointer registrations not updated
+Compressed data not updated
+Module registrations not updated
+QSTR not updated
+CC ../../modules/smartcar/modsmartcar.c
+CC ../../modules/smartcar/adc_port.c
+CC ../../modules/seekfree/modseekfree.c
+CC ../../modules/smartcar/encoder_port.c
+CC ../../modules/seekfree/imu_port.c
+LINK build-seekfree/micropython
+   text	   data	    bss	    dec	    hex	filename
+ 822470	  74272	   4464	 901206	  dc056	build-seekfree/micropython
+make: Leaving directory '/home/wxx33/micropython/ports/unix'

@@ -77,6 +77,7 @@ static void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
 //   - `mode` must be either `SPI.CONTROLLER` or `SPI.PERIPHERAL`.
 //   - `baudrate` is the SCK clock rate (only sensible for a controller).
 static mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    spi_check_seekfree(self->spi);
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 328125} },

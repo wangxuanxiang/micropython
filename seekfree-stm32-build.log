@@ -1,0 +1,42 @@
+make: Entering directory '/home/wxx33/micropython/ports/stm32'
+Use make V=1 or set BUILD_VERBOSE in your environment to increase build verbosity.
+Including User C Module from ../../modules/seekfree
+Including User C Module from ../../modules/smartcar
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/qstr.i.last
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/moduledefs.split
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/qstr.split
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/root_pointers.split
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/compressed.split
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/qstrdefs.collected.h
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/moduledefs.collected
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/compressed.collected
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/genhdr/root_pointers.collected
+Module registrations not updated
+Root pointer registrations not updated
+Compressed data not updated
+QSTR not updated
+CC ../../modules/seekfree/modseekfree.c
+CC ../../modules/seekfree/imu_port.c
+CC ../../modules/smartcar/modsmartcar.c
+CC ../../modules/smartcar/adc_port.c
+CC ../../modules/smartcar/encoder_port.c
+CC ../../extmod/machine_adc.c
+CC ../../extmod/machine_pwm.c
+CC ../../extmod/modmachine.c
+CC main.c
+CC stm32_it.c
+CC timer.c
+CC spi.c
+CC pyb_spi.c
+CC machine_spi.c
+CC modpyb.c
+CC adc.c
+CC subghz.c
+CC boards/WEACTSTUDIO_MINI_STM32H743/bdev.c
+LINK build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.elf
+   text	   data	    bss	    dec	    hex	filename
+ 426500	     76	  32888	 459464	  702c8	build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.elf
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.bin
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.hex
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.dfu
+make: Leaving directory '/home/wxx33/micropython/ports/stm32'

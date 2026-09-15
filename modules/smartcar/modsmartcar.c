@@ -8,6 +8,9 @@
 #include "py/mperrno.h"
 #include "port.h"
 #include "smartcar.h"
+#if MICROPY_PY_SEEKFREE
+#include "../seekfree/seekfree.h"
+#endif
 #ifndef UNIX
 #include "pin.h"
 #include "timer.h"
@@ -38,7 +41,7 @@ struct _sc_ticker_t {
     sc_dispatch_t *dispatch;
     mp_obj_t callback;
     size_t count;
-    sc_sensor_t *sensors[8];
+    mp_obj_t sensors[8];
 };
 static qstr sc_pin_keys[64];
 MP_REGISTER_ROOT_POINTER(void *sc_timer_owners[18]);
@@ -125,25 +128,35 @@ static sc_sensor_t *sensor_check(mp_obj_t obj) {
     if (s->closed) { mp_raise_ValueError(MP_ERROR_TEXT("sensor deinitialised")); }
     return s;
 }
-static void sensor_capture_native(sc_sensor_t *s) {
+static void sensor_capture_native_obj(mp_obj_t obj) {
+    #if MICROPY_PY_SEEKFREE
+    if (seekfree_sensor_is(obj)) {
+        seekfree_sensor_capture(obj);
+        return;
+    }
+    #endif
+    sc_sensor_t *s = MP_OBJ_TO_PTR(obj);
     if (s->base.type == &sc_adc_type) {
         s->error = sc_adc_capture(s->ctx, s->adc);
     } else {
         s->error = sc_encoder_capture(s->ctx, &s->encoder);
     }
 }
-static mp_obj_t sensor_capture(mp_obj_t obj) {
-    sc_sensor_t *s = sensor_check(obj);
-    // Foreground capture is not permitted while an attached ticker is active.
+bool sc_sensor_is_running(mp_obj_t obj) {
     for (int i = 0; i < 4; ++i) {
         sc_ticker_t *t = MP_STATE_VM(sc_tickers)[i];
         if (t && t->running) {
             for (size_t j = 0; j < t->count; ++j) {
-                if (t->sensors[j] == s) { mp_raise_OSError(MP_EBUSY); }
+                if (t->sensors[j] == obj) { return true; }
             }
         }
     }
-    sensor_capture_native(s);
+    return false;
+}
+static mp_obj_t sensor_capture(mp_obj_t obj) {
+    sc_sensor_t *s = sensor_check(obj);
+    if (sc_sensor_is_running(obj)) { mp_raise_OSError(MP_EBUSY); }
+    sensor_capture_native_obj(obj);
     if (s->error) { mp_raise_OSError(s->error); }
     return mp_const_none;
 }
@@ -282,7 +295,7 @@ void smartcar_irq(void) {
         if (!t || !t->running || --t->remaining) { continue; }
         t->remaining = t->period;
         ++t->ticks;
-        for (size_t j = 0; j < t->count; ++j) { sensor_capture_native(t->sensors[j]); }
+        for (size_t j = 0; j < t->count; ++j) { sensor_capture_native_obj(t->sensors[j]); }
         sc_dispatch_t *d = t->dispatch;
         if (!d->pending) {
             d->pending = true;
@@ -406,21 +419,45 @@ static mp_obj_t ticker_captures(size_t n, const mp_obj_t *args) {
     sc_ticker_t *t = MP_OBJ_TO_PTR(args[0]);
     if (n > 9) { mp_raise_ValueError(MP_ERROR_TEXT("maximum 8 captures")); }
     if (t->running) { mp_raise_OSError(MP_EBUSY); }
-    sc_sensor_t *sensors[8];
+    mp_obj_t sensors[8];
     for (size_t i = 1; i < n; ++i) {
-        sensors[i - 1] = sensor_check(args[i]);
-        sc_sensor_t *s = sensors[i - 1];
-        if (s->base.type == &sc_adc_type && !s->count) { mp_raise_ValueError(MP_ERROR_TEXT("ADC group has no channels")); }
+        sensors[i - 1] = args[i];
+        sc_sensor_t *s = NULL;
+        bool is_seekfree = false;
+        #if MICROPY_PY_SEEKFREE
+        is_seekfree = seekfree_sensor_is(sensors[i - 1]);
+        #endif
+        if (!is_seekfree) { s = sensor_check(sensors[i - 1]); }
+        if (s && s->base.type == &sc_adc_type && !s->count) { mp_raise_ValueError(MP_ERROR_TEXT("ADC group has no channels")); }
         for (size_t j = 1; j < i; ++j) {
-            if (sensors[j - 1] == s) { mp_raise_ValueError(MP_ERROR_TEXT("duplicate capture")); }
+            if (sensors[j - 1] == sensors[i - 1]) { mp_raise_ValueError(MP_ERROR_TEXT("duplicate capture")); }
         }
         bool ours = false;
-        for (size_t j = 0; j < t->count; ++j) { ours |= t->sensors[j] == s; }
+        for (size_t j = 0; j < t->count; ++j) { ours |= t->sensors[j] == sensors[i - 1]; }
+        #if MICROPY_PY_SEEKFREE
+        if (is_seekfree) {
+            if (seekfree_sensor_attached(sensors[i - 1]) && !ours) { mp_raise_OSError(MP_EBUSY); }
+        } else
+        #endif
         if (s->attached && !ours) { mp_raise_OSError(MP_EBUSY); }
     }
-    for (size_t j = 0; j < t->count; ++j) { --t->sensors[j]->attached; t->sensors[j] = NULL; }
+    for (size_t j = 0; j < t->count; ++j) {
+        #if MICROPY_PY_SEEKFREE
+        if (seekfree_sensor_is(t->sensors[j])) { seekfree_sensor_detach(t->sensors[j]); }
+        else
+        #endif
+        { --((sc_sensor_t *)MP_OBJ_TO_PTR(t->sensors[j]))->attached; }
+        t->sensors[j] = MP_OBJ_NULL;
+    }
     t->count = n - 1;
-    for (size_t j = 0; j < t->count; ++j) { t->sensors[j] = sensors[j]; ++sensors[j]->attached; }
+    for (size_t j = 0; j < t->count; ++j) {
+        t->sensors[j] = sensors[j];
+        #if MICROPY_PY_SEEKFREE
+        if (seekfree_sensor_is(sensors[j])) { seekfree_sensor_attach(sensors[j]); }
+        else
+        #endif
+        { ++((sc_sensor_t *)MP_OBJ_TO_PTR(sensors[j]))->attached; }
+    }
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ticker_captures_obj, 1, MP_OBJ_FUN_ARGS_MAX, ticker_captures);

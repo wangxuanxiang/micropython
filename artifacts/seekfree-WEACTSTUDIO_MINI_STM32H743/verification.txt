@@ -1,0 +1,48 @@
+2026-09-15T16:13:31+08:00
+IMU660RX(capture_div=1, *, spi=2, cs='B12')
+Models: IMU660RA (BMI270), IMU660RB, IMU660RC; +/-8g, +/-2000dps
+RA output: 50/200Hz; RB output: 52/208Hz (acc/gyro)
+capture(): divided sampling; read(): immediate; get(): live six-int list
+data=[acc_x,acc_y,acc_z,gyro_x,gyro_y,gyro_z]; scales(): LSB/g, LSB/dps
+Default SPI2: B13 SCK, B14 MISO, B15 MOSI, B12 CS; 3.3V
+Do not resize the live list; copy with list(imu.get()) for history.
+IMU660RX(capture_div=1, *, spi=2, cs='B12')
+Models: IMU660RA (BMI270), IMU660RB, IMU660RC; +/-8g, +/-2000dps
+RA output: 50/200Hz; RB output: 52/208Hz (acc/gyro)
+capture(): divided sampling; read(): immediate; get(): live six-int list
+data=[acc_x,acc_y,acc_z,gyro_x,gyro_y,gyro_z]; scales(): LSB/g, LSB/dps
+Default SPI2: B13 SCK, B14 MISO, B15 MOSI, B12 CS; 3.3V
+Do not resize the live list; copy with list(imu.get()) for history.
+IMU660RX model=IMU660RA SPI2 CS=B12 capture_div=2 range=+/-8g,+/-2000dps error=0
+IMU660RX(capture_div=1, *, spi=2, cs='B12')
+Models: IMU660RA (BMI270), IMU660RB, IMU660RC; +/-8g, +/-2000dps
+RA output: 50/200Hz; RB output: 52/208Hz (acc/gyro)
+capture(): divided sampling; read(): immediate; get(): live six-int list
+data=[acc_x,acc_y,acc_z,gyro_x,gyro_y,gyro_z]; scales(): LSB/g, LSB/dps
+Default SPI2: B13 SCK, B14 MISO, B15 MOSI, B12 CS; 3.3V
+Do not resize the live list; copy with list(imu.get()) for history.
+IMU660RX model=IMU660RB SPI2 CS=B12 capture_div=2 range=+/-8g,+/-2000dps error=0
+IMU660RX(capture_div=1, *, spi=2, cs='B12')
+Models: IMU660RA (BMI270), IMU660RB, IMU660RC; +/-8g, +/-2000dps
+RA output: 50/200Hz; RB output: 52/208Hz (acc/gyro)
+capture(): divided sampling; read(): immediate; get(): live six-int list
+data=[acc_x,acc_y,acc_z,gyro_x,gyro_y,gyro_z]; scales(): LSB/g, LSB/dps
+Default SPI2: B13 SCK, B14 MISO, B15 MOSI, B12 CS; 3.3V
+Do not resize the live list; copy with list(imu.get()) for history.
+IMU660RX model=IMU660RC SPI2 CS=B12 capture_div=2 range=+/-8g,+/-2000dps error=0
+seekfree IMU660 tests passed
+smartcar tests passed
+smartcar encoder tests passed
+smartcar ADC tests passed
+CC machine_spi.c
+CC modpyb.c
+CC adc.c
+CC subghz.c
+CC boards/WEACTSTUDIO_MINI_STM32H743/bdev.c
+LINK build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.elf
+   text	   data	    bss	    dec	    hex	filename
+ 426500	     76	  32888	 459464	  702c8	build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.elf
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.bin
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.hex
+GEN build-seekfree-WEACTSTUDIO_MINI_STM32H743/firmware.dfu
+make: Leaving directory '/home/wxx33/micropython/ports/stm32'

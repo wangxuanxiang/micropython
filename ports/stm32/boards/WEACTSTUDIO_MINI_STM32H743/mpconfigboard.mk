@@ -22,3 +22,4 @@ MICROPY_VFS_LFS2 = 1
 FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py
 
 USER_C_MODULES += $(TOP)/modules/smartcar
+USER_C_MODULES += $(TOP)/modules/seekfree

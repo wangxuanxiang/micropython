@@ -762,6 +762,10 @@ soft_reset_exit:
     extern void smartcar_deinit(void);
     smartcar_deinit();
     #endif
+    #if MICROPY_PY_SEEKFREE
+    extern void seekfree_deinit(void);
+    seekfree_deinit();
+    #endif
     soft_timer_deinit();
     timer_deinit();
     uart_deinit_all();

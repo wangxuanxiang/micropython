@@ -31,6 +31,17 @@
 #include "spi.h"
 #include "extmod/modmachine.h"
 
+// The IMU uses exclusive native SPI transactions from ticker IRQs.
+void spi_check_seekfree(const spi_t *bus) {
+    #if MICROPY_PY_SEEKFREE
+    extern bool seekfree_spi_claimed(unsigned id);
+    for (unsigned i = 0; i < MP_ARRAY_SIZE(spi_obj); ++i) {
+        if (bus == &spi_obj[i] && seekfree_spi_claimed(i + 1)) {
+            mp_raise_OSError(MP_EBUSY);
+        }
+    }
+    #endif
+}
 // Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3
 // SPI1_RX: DMA2_Stream0.CHANNEL_3 or DMA2_Stream2.CHANNEL_3
@@ -240,6 +251,7 @@ int spi_find_index(mp_obj_t id) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) is reserved"), spi_id);
     }
 
+    spi_check_seekfree(&spi_obj[spi_id - 1]);
     return spi_id;
 }
 
@@ -315,6 +327,7 @@ static uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
 // if an argument is -1 then the corresponding parameter is not changed
 void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
     int32_t polarity, int32_t phase, int32_t bits, int32_t firstbit) {
+    spi_check_seekfree(spi_obj);
     SPI_HandleTypeDef *spi = spi_obj->spi;
     SPI_InitTypeDef *init = &spi->Init;
 
@@ -366,6 +379,7 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
 
 // TODO allow to take a list of pins to use
 int spi_init(const spi_t *self, bool enable_nss_pin) {
+    spi_check_seekfree(self);
     SPI_HandleTypeDef *spi = self->spi;
     uint32_t irqn = 0;
     const machine_pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
@@ -510,6 +524,7 @@ int spi_init(const spi_t *self, bool enable_nss_pin) {
 }
 
 void spi_deinit(const spi_t *spi_obj) {
+    spi_check_seekfree(spi_obj);
     SPI_HandleTypeDef *spi = spi_obj->spi;
     HAL_SPI_DeInit(spi);
     if (0) {
@@ -602,6 +617,7 @@ static HAL_StatusTypeDef spi_wait_dma_finished(const spi_t *spi, uint32_t t_star
 }
 
 void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *dest, uint32_t timeout) {
+    spi_check_seekfree(self);
     // Note: there seems to be a problem sending 1 byte using DMA the first
     // time directly after the SPI/DMA is initialised.  The cause of this is
     // unknown but we sidestep the issue by using polling for 1 byte transfer.
@@ -713,6 +729,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
 }
 
 void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
+    spi_check_seekfree(spi_obj);
     SPI_HandleTypeDef *spi = spi_obj->spi;
 
     uint spi_num = 1; // default to SPI1
@@ -812,6 +829,7 @@ mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
 
 static int spi_proto_ioctl(void *self_in, uint32_t cmd) {
     spi_proto_cfg_t *self = (spi_proto_cfg_t *)self_in;
+    spi_check_seekfree(self->spi);
 
     switch (cmd) {
         case MP_SPI_IOCTL_INIT:

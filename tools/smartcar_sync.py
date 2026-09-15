@@ -13,10 +13,10 @@ state_file = state_dir / 'hashes.json'
 state = json.loads(state_file.read_text()) if state_file.exists() else {}
 files = [
     'ports/stm32/adc.c', 'ports/stm32/machine_adc.c', 'ports/stm32/main.c',
-    'ports/stm32/timer.c', 'ports/stm32/stm32_it.c', 'ports/stm32/machine_pwm.c',
+    'ports/stm32/timer.c', 'ports/stm32/stm32_it.c', 'ports/stm32/machine_pwm.c', 'ports/stm32/spi.c', 'ports/stm32/pyb_spi.c', 'ports/stm32/spi.h',
     'ports/stm32/boards/WEACTSTUDIO_MINI_STM32H743/mpconfigboard.mk',
 ]
-for directory in ('modules/smartcar', 'tests/smartcar', 'seekfree_demos/stm32'):
+for directory in ('modules/smartcar', 'modules/seekfree', 'tests/smartcar', 'tests/seekfree', 'seekfree_demos/stm32'):
     files.extend(str(p.relative_to(source)) for p in (source / directory).rglob('*') if p.is_file())
 def digest(data):
     return hashlib.sha256(data.replace(b'\r\n', b'\n')).hexdigest()
